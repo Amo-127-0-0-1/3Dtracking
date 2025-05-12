@@ -1,3 +1,6 @@
+# Notes
+Batch prediction (predict_movie_batch.py) suitable for offline processing with powerful GPU, and parallel video annotation (annotate_movie_parallel.py).
+
 # Three-dimensional tracking of protists from two-dimensional microscopy images
 
 Code for the article:
