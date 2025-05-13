@@ -81,7 +81,7 @@ if __name__ == '__main__':
     ]
     P = ParametersDialog(title='Enter parameters', parameters=parameters).value
 
-    # conversion factors
+    # Conversion factors
     if P['in_pixel']:
         pixel_size = 1.0
         z_factor = P['pixel_size'] * 1.33
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     data = data[data['frame'] / fps < P['truncate']]
     toc('Load and process trajectories')
 
-    # --- sorted list of image paths ---
+    # --- Sorted list of image paths ---
     tic('Build image paths')
     all_files = [
         f for f in os.listdir(frames_dir)
@@ -136,7 +136,13 @@ if __name__ == '__main__':
     writer = iio.get_writer(movie_out, fps=fps, quality=5)
 
     with ProcessPoolExecutor() as executor:
-        for img in tqdm.tqdm(executor.map(overlay_frame, tasks), total=len(tasks), desc="Processing frames"):
+        futures = []
+        # executor.submit to control task order!
+        for task in tasks:
+            futures.append(executor.submit(overlay_frame, task))
+
+        for future in tqdm.tqdm(futures, total=len(futures), desc="Processing frames"):
+            img = future.result()
             writer.append_data(img)
 
     writer.close()
@@ -144,11 +150,3 @@ if __name__ == '__main__':
 
     print(f"Done! Saved overlay movie to {movie_out}")
     toc('TOTAL')
-
-# 11797
-# Load and process trajectories took 0.15 seconds.
-# Build image paths took 0.31 seconds.
-# Prepare tasks took 6.53 seconds.
-# Write movie parallel took 195.63 seconds.
-# TOTAL took 202.63 seconds.
-
